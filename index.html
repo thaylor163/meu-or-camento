@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastBudget - Orçamento Automático</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4bb543;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .tagline {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        main {
+            padding: 3rem 0;
+        }
+        
+        .budget-form {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent);
+            outline: none;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--secondary);
+        }
+        
+        .services {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .service-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .service-card h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .service-card.selected {
+            border: 2px solid var(--accent);
+            background-color: #f0f7ff;
+        }
+        
+        .calculator {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .calculator-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .option-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .option-item input {
+            width: auto;
+            margin-right: 0.5rem;
+        }
+        
+        .option-item label {
+            margin-bottom: 0;
+            font-weight: normal;
+        }
+        
+        .price-display {
+            background: var(--light);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+        
+        .estimated-price {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 0.5rem 0;
+        }
+        
+        .budget-summary {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            border-left: 4px solid var(--accent);
+        }
+        
+        footer {
+            background-color: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .services, .calculator-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>FastBudget</h1>
+            <p class="tagline">Orçamentos automáticos e sem complicação</p>
+        </div>
+    </header>
+    
+    <main class="container">
+        <section class="calculator">
+            <h2>Calculadora de Orçamento</h2>
+            <p>Selecione os serviços desejados para obter uma estimativa instantânea</p>
+            
+            <div class="form-group">
+                <label>Selecione o serviço principal</label>
+                <div class="services">
+                    <div class="service-card" data-service="website" data-base-price="1500">
+                        <h3>Website</h3>
+                        <p>Site institucional responsivo</p>
+                        <p class="base-price">A partir de R$ 1.500,00</p>
+                    </div>
+                    
+                    <div class="service-card" data-service="ecommerce" data-base-price="3500">
+                        <h3>E-commerce</h3>
+                        <p>Loja virtual completa</p>
+                        <p class="base-price">A partir de R$ 3.500,00</p>
+                    </div>
+                    
+                    <div class="service-card" data-service="design" data-base-price="800">
+                        <h3>Design</h3>
+                        <p>Identidade visual e materiais</p>
+                        <p class="base-price">A partir de R$ 800,00</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group website-options" style="display: none;">
+                <label>Opções para Website</label>
+                <div class="calculator-options">
+                    <div class="option-item">
+                        <input type="checkbox" id="seo" data-price="800">
+                        <label for="seo">Otimização SEO (+R$ 800)</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="blog" data-price="500">
+                        <label for="blog">Sistema de Blog (+R$ 500)</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="multilingual" data-price="1200">
+                        <label for="multilingual">Multilíngue (+R$ 1.200)</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group ecommerce-options" style="display: none;">
+                <label>Opções para E-commerce</label>
+                <div class="calculator-options">
+                    <div class="option-item">
+                        <input type="checkbox" id="payment" data-price="1500">
+                        <label for="payment">Gateway de Pagamento (+R$ 1.500)</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="inventory" data-price="1000">
+                        <label for="inventory">Controle de Estoque (+R$ 1.000)</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="mobile-app" data-price="2500">
+                        <label for="mobile-app">Aplicativo Mobile (+R$ 2.500)</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group design-options" style="display: none;">
+                <label>Opções para Design</label>
+                <div class="calculator-options">
+                    <div class="option-item">
+                        <input type="checkbox" id="logo" data-price="600">
+                        <label for="logo">Criação de Logo (+R$ 600)</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="branding" data-price="1200">
+                        <label for="branding">Manual de Marca (+R$ 1.200)</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="social" data-price="900">
+                        <label for="social">Posts para Redes Sociais (+R$ 900)</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="urgency">Urgência do projeto</label>
+                <select id="urgency" class="price-factor" data-factors="1,1.2,1.5">
+                    <option value="1">Padrão (15-30 dias)</option>
+                    <option value="1.2">Urgente (7-14 dias) +20%</option>
+                    <option value="1.5">Muito Urgente (1-7 dias) +50%</option>
+                </select>
+            </div>
+            
+            <div class="price-display">
+                <h3>Estimativa de Valor</h3>
+                <div class="estimated-price">R$ 0,00</div>
+                <p>Valor estimado para o projeto</p>
+                
+                <div class="budget-summary" id="budgetSummary" style="display: none;">
+                    <h4>Resumo do Orçamento</h4>
+                    <div id="summaryDetails"></div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="budget-form">
+            <h2>Solicite seu Orçamento Oficial</h2>
+            <form id="budgetRequestForm">
+                <div class="form-group">
+                    <label for="name">Nome completo</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Telefone</label>
+                    <input type="tel" id="phone" name="phone" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="details">Detalhes adicionais</label>
+                    <textarea id="details" name="details" rows="5"></textarea>
+                </div>
+                
+                <input type="hidden" id="calculatedPrice" name="calculatedPrice" value="0">
+                <input type="hidden" id="selectedService" name="selectedService" value="">
+                <input type="hidden" id="selectedOptions" name="selectedOptions" value="">
+                
+                <button type="submit">Solicitar Orçamento Oficial</button>
+            </form>
+        </section>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>© 2023 FastBudget - Todos os direitos reservados</p>
+            <p>contato@fastbudget.com.br | (11) 1234-5678</p>
+        </div>
+    </footer>
+    
+    <script>
+        // Variáveis globais
+        let basePrice = 0;
+        let selectedService = '';
+        let selectedOptions = [];
+        
+        // Selecionar serviço principal
+        document.querySelectorAll('.service-card').forEach(card => {
+            card.addEventListener('click', function() {
+                // Remover seleção anterior
+                document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+                
+                // Adicionar seleção atual
+                this.classList.add('selected');
+                
+                // Obter dados do serviço
+                basePrice = parseInt(this.dataset.basePrice);
+                selectedService = this.dataset.service;
+                
+                // Atualizar campos ocultos do formulário
+                document.getElementById('selectedService').value = this.querySelector('h3').textContent;
+                
+                // Esconder todas as opções primeiro
+                document.querySelectorAll('.form-group[class$="-options"]').forEach(opt => {
+                    opt.style.display = 'none';
+                });
+                
+                // Mostrar opções do serviço selecionado
+                document.querySelector(.${selectedService}-options).style.display = 'block';
+                
+                // Calcular preço
+                calculatePrice();
+            });
+        });
+        
+        // Ouvintes para opções adicionais
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                calculatePrice();
+            });
+        });
+        
+        // Ouvinte para urgência
+        document.getElementById('urgency').addEventListener('change', function() {
+            calculatePrice();
+        });
+        
+        // Função para calcular o preço
+        function calculatePrice() {
+            if (basePrice === 0) return;
+            
+            let total = basePrice;
+            let optionsList = [];
+            
+            // Calcular opções selecionadas
+            document.querySelectorAll(.${selectedService}-options input[type="checkbox"]:checked).forEach(opt => {
+                const optionPrice = parseInt(opt.dataset.price);
+                total += optionPrice;
+                optionsList.push({
+                    name: opt.nextElementSibling.textContent.replace(/\(\+\$?\s?\d+[\.,]?\d*\)/, '').trim(),
+                    price: optionPrice
+                });
+            });
+            
+            // Aplicar fator de urgência
+            const urgencyFactor = parseFloat(document.getElementById('urgency').value);
+            total *= urgencyFactor;
+            
+            // Atualizar exibição do preço
+            document.querySelector('.estimated-price').textContent = R$ ${total.toFixed(2).replace('.', ',')};
+            
+            // Atualizar campos ocultos do formulário
+            document.getElementById('calculatedPrice').value = total;
+            document.getElementById('selectedOptions').value = JSON.stringify(optionsList);
+            
+            // Atualizar resumo
+            updateSummary(total, optionsList);
+        }
+        
+        // Atualizar resumo do orçamento
+        function updateSummary(total, options) {
+            const summaryElement = document.getElementById('summaryDetails');
+            const summaryContainer = document.getElementById('budgetSummary');
+            
+            if (!selectedService) {
+                summaryContainer.style.display = 'none';
+                return;
+            }
+            
+            let html = `
+                <p><strong>Serviço Principal:</strong> ${document.querySelector('.service-card.selected h3').textContent}</p>
+                <p><strong>Valor Base:</strong> R$ ${basePrice.toFixed(2).replace('.', ',')}</p>
+            `;
+            
+            if (options.length > 0) {
+                html += <p><strong>Opções Adicionais:</strong></p><ul>;
+                options.forEach(opt => {
+                    html += <li>${opt.name} - R$ ${opt.price.toFixed(2).replace('.', ',')}</li>;
+                });
+                html += </ul>;
+            }
+            
+            const urgencyText = document.getElementById('urgency').options[document.getElementById('urgency').selectedIndex].text;
+            html += <p><strong>Urgência:</strong> ${urgencyText}</p>;
+            
+            html += <p><strong>Total Estimado:</strong> R$ ${total.toFixed(2).replace('.', ',')}</p>;
+            
+            summaryElement.innerHTML = html;
+            summaryContainer.style.display = 'block';
+        }
+        
+        // Envio do formulário
+        document.getElementById('budgetRequestForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (basePrice === 0) {
+                alert('Por favor, selecione um serviço principal antes de enviar.');
+                return;
+            }
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                details: document.getElementById('details').value,
+                service: document.getElementById('selectedService').value,
+                options: JSON.parse(document.getElementById('selectedOptions').value),
+                price: document.getElementById('calculatedPrice').value
+            };
+            
+            console.log('Dados do orçamento:', formData);
+            alert('Orçamento solicitado com sucesso! Entraremos em contato em breve para confirmar os detalhes.');
+            
+            this.reset();
+            document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+            document.querySelectorAll('.form-group[class$="-options"]').forEach(opt => {
+                opt.style.display = 'none';
+            });
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            document.querySelector('.estimated-price').textContent = 'R$ 0,00';
+            document.getElementById('budgetSummary').style.display = 'none';
+            
+            basePrice = 0;
+            selectedService = '';
+            selectedOptions = [];
+        });
+        
+        // Máscara para telefone
+        document.getElementById('phone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            
+            if (value.length > 2 && value.length <= 6) {
+                value = value.replace(/^(\d{2})(\d{0,4})/, '($1) $2');
+            } else if (value.length > 6 && value.length <= 10) {
+                value = value.replace(/^(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+            } else if (value.length > 10) {
+                value = value.replace(/^(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+            }
+            
+            e.target.value = value;
+        });
+    </script>
+</body>
+</html>
